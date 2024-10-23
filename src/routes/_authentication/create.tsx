@@ -9,16 +9,16 @@ import {
   Input,
   Textarea,
   VStack,
-} from "@chakra-ui/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { MemeEditor } from "../../components/meme-editor";
-import { useMemo, useState } from "react";
-import { MemePictureProps } from "../../components/meme-picture";
-import { Plus, Trash } from "@phosphor-icons/react";
+} from "@chakra-ui/react"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { MemeEditor } from "../../components/meme-editor"
+import { useMemo, useState } from "react"
+import { MemePictureProps } from "../../components/meme-picture"
+import { Plus, Trash } from "@phosphor-icons/react"
 
 export const Route = createFileRoute("/_authentication/create")({
   component: CreateMemePage,
-});
+})
 
 type Picture = {
   url: string;
@@ -26,15 +26,15 @@ type Picture = {
 };
 
 function CreateMemePage() {
-  const [picture, setPicture] = useState<Picture | null>(null);
-  const [texts, setTexts] = useState<MemePictureProps["texts"]>([]);
+  const [picture, setPicture] = useState<Picture | null>(null)
+  const [texts, setTexts] = useState<MemePictureProps["texts"]>([])
 
   const handleDrop = (file: File) => {
     setPicture({
       url: URL.createObjectURL(file),
       file,
-    });
-  };
+    })
+  }
 
   const handleAddCaptionButtonClick = () => {
     setTexts([
@@ -44,23 +44,23 @@ function CreateMemePage() {
         x: Math.random() * 400,
         y: Math.random() * 225,
       },
-    ]);
-  };
+    ])
+  }
 
   const handleDeleteCaptionButtonClick = (index: number) => {
-    setTexts(texts.filter((_, i) => i !== index));
-  };
+    setTexts(texts.filter((_, i) => i !== index))
+  }
 
   const memePicture = useMemo(() => {
     if (!picture) {
-      return undefined;
+      return undefined
     }
 
     return {
       pictureUrl: picture.url,
       texts,
-    };
-  }, [picture, texts]);
+    }
+  }, [picture, texts])
 
   return (
     <Flex width="full" height="full">
@@ -138,5 +138,5 @@ function CreateMemePage() {
         </HStack>
       </Flex>
     </Flex>
-  );
+  )
 }

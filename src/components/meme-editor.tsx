@@ -1,7 +1,7 @@
-import { useDropzone } from "react-dropzone";
-import { MemePicture, MemePictureProps } from "./meme-picture";
-import { AspectRatio, Box, Button, Flex, Icon, Text } from "@chakra-ui/react";
-import { Image, Pencil } from "@phosphor-icons/react";
+import { useDropzone } from "react-dropzone"
+import { MemePicture, MemePictureProps } from "./meme-picture"
+import { AspectRatio, Box, Button, Flex, Icon, Text } from "@chakra-ui/react"
+import { Image, Pencil } from "@phosphor-icons/react"
 
 export type MemeEditorProps = {
   onDrop: (file: File) => void;
@@ -23,7 +23,7 @@ function renderNoPicture() {
         or drop it in this area
       </Text>
     </Flex>
-  );
+  )
 }
 
 function renderMemePicture(memePicture: MemePictureProps, open: () => void) {
@@ -51,7 +51,7 @@ function renderMemePicture(memePicture: MemePictureProps, open: () => void) {
         Change picture
       </Button>
     </Box>
-  );
+  )
 }
 
 export const MemeEditor: React.FC<MemeEditorProps> = ({
@@ -61,13 +61,13 @@ export const MemeEditor: React.FC<MemeEditorProps> = ({
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop: (files: File[]) => {
       if (files.length === 0) {
-        return;
+        return
       }
-      onDrop(files[0]);
+      onDrop(files[0])
     },
     noClick: memePicture !== undefined,
     accept: { "image/png": [".png"], "image/jpg": [".jpg"] },
-  });
+  })
 
   return (
     <AspectRatio ratio={16 / 9}>
@@ -84,5 +84,5 @@ export const MemeEditor: React.FC<MemeEditorProps> = ({
         {memePicture ? renderMemePicture(memePicture, open) : renderNoPicture()}
       </Box>
     </AspectRatio>
-  );
-};
+  )
+}
