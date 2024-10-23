@@ -27,48 +27,61 @@ import {
 import { useAuthToken } from "../../contexts/authentication"
 import { Loader } from "../../components/loader"
 import { MemePicture } from "../../components/meme-picture"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
 
 export const MemeFeedPage: React.FC = () => {
   const token = useAuthToken()
-  const { isLoading, data: memes } = useQuery({
+  const [memesList, setMemesList] = useState<unknown[]>([])
+  const { isLoading, data } = useQuery({
     queryKey: ["memes"],
     queryFn: async () => {
-      const memes: GetMemesResponse["results"] = []
+      console.log(data, "data")
       const firstPage = await getMemes(token, 1)
-      memes.push(...firstPage.results)
-      const remainingPages = Math.ceil(firstPage.total / firstPage.pageSize) - 1
+      console.log(firstPage, "firstPage")
+      const rawMemesList = firstPage.results
+
+      const toto = await Promise.all(
+        rawMemesList.map(async (rawMeme) => {
+          const author = await getUserById(token, rawMeme.authorId)
+          return { ...rawMeme, author }
+        })
+      )
+
+      setMemesList(toto)
+
+      /*       const remainingPages =
+        Math.ceil(firstPage.total / firstPage.pageSize) - 1;
       for (let i = 0; i < remainingPages; i++) {
-        const page = await getMemes(token, i + 2)
-        memes.push(...page.results)
+        const page = await getMemes(token, i + 2);
+        memes.push(...page.results);
       }
-      const memesWithAuthorAndComments = []
-      for (const meme of memes) {
-        const author = await getUserById(token, meme.authorId)
-        const comments: GetMemeCommentsResponse["results"] = []
-        const firstPage = await getMemeComments(token, meme.id, 1)
-        comments.push(...firstPage.results)
+      const memesWithAuthorAndComments = [];
+      for (let meme of memes) {
+        const author = await getUserById(token, meme.authorId);
+        const comments: GetMemeCommentsResponse["results"] = [];
+        const firstPage = await getMemeComments(token, meme.id, 1);
+        comments.push(...firstPage.results);
         const remainingCommentPages =
-          Math.ceil(firstPage.total / firstPage.pageSize) - 1
+          Math.ceil(firstPage.total / firstPage.pageSize) - 1;
         for (let i = 0; i < remainingCommentPages; i++) {
-          const page = await getMemeComments(token, meme.id, i + 2)
-          comments.push(...page.results)
+          const page = await getMemeComments(token, meme.id, i + 2);
+          comments.push(...page.results);
         }
         const commentsWithAuthor: (GetMemeCommentsResponse["results"][0] & {
-          author: GetUserByIdResponse
-        })[] = []
-        for (const comment of comments) {
-          const author = await getUserById(token, comment.authorId)
-          commentsWithAuthor.push({ ...comment, author })
+          author: GetUserByIdResponse;
+        })[] = [];
+        for (let comment of comments) {
+          const author = await getUserById(token, comment.authorId);
+          commentsWithAuthor.push({ ...comment, author });
         }
         memesWithAuthorAndComments.push({
           ...meme,
           author,
           comments: commentsWithAuthor,
-        })
+        });
       }
-      return memesWithAuthorAndComments
+      return memesWithAuthorAndComments; */
     },
   })
   const { data: user } = useQuery({
@@ -80,14 +93,19 @@ export const MemeFeedPage: React.FC = () => {
   const [openedCommentSection, setOpenedCommentSection] = useState<
     string | null
   >(null)
-  const [commentContent, setCommentContent] = useState<{
-    [key: string]: string
-  }>({})
+  /*   const [commentContent, setCommentContent] = useState<{
+    [key: string]: string;
+  }>({});
   const { mutate } = useMutation({
     mutationFn: async (data: { memeId: string; content: string }) => {
-      await createMemeComment(token, data.memeId, data.content)
+      await createMemeComment(token, data.memeId, data.content);
     },
-  })
+  }); */
+
+  useEffect(() => {
+    console.log(memesList, "memesList")
+  }, [memesList])
+
   if (isLoading) {
     return <Loader data-testid="meme-feed-loader" />
   }
@@ -99,7 +117,7 @@ export const MemeFeedPage: React.FC = () => {
         maxWidth={800}
         divider={<StackDivider border="gray.200" />}
       >
-        {memes?.map((meme) => {
+        {memesList?.map((meme) => {
           return (
             <VStack key={meme.id} p={4} width="full" align="stretch">
               <Flex justifyContent="space-between" alignItems="center">
@@ -170,16 +188,16 @@ export const MemeFeedPage: React.FC = () => {
                   <Icon as={Chat} />
                 </Flex>
               </LinkBox>
-              <Collapse in={openedCommentSection === meme.id} animateOpacity>
+              {/* <Collapse in={openedCommentSection === meme.id} animateOpacity>
                 <Box mb={6}>
                   <form
                     onSubmit={(event) => {
-                      event.preventDefault()
+                      event.preventDefault();
                       if (commentContent[meme.id]) {
                         mutate({
                           memeId: meme.id,
                           content: commentContent[meme.id],
-                        })
+                        });
                       }
                     }}
                   >
@@ -198,7 +216,7 @@ export const MemeFeedPage: React.FC = () => {
                           setCommentContent({
                             ...commentContent,
                             [meme.id]: event.target.value,
-                          })
+                          });
                         }}
                         value={commentContent[meme.id]}
                       />
@@ -247,7 +265,7 @@ export const MemeFeedPage: React.FC = () => {
                     </Flex>
                   ))}
                 </VStack>
-              </Collapse>
+              </Collapse> */}
             </VStack>
           )
         })}
