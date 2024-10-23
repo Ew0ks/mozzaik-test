@@ -1,14 +1,14 @@
-import { vi } from "vitest";
-import { act, fireEvent, waitFor, screen } from "@testing-library/react";
-import { renderWithRouter } from "../utils";
-import { LoginPage } from "../../routes/login";
+import { vi } from "vitest"
+import { act, fireEvent, waitFor, screen } from "@testing-library/react"
+import { renderWithRouter } from "../utils"
+import { LoginPage } from "../../routes/login"
 import {
   AuthenticationContext,
   AuthenticationState,
-} from "../../contexts/authentication";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ChakraProvider } from "@chakra-ui/react";
-import { ListenerFn, RouterEvents } from "@tanstack/react-router";
+} from "../../contexts/authentication"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ChakraProvider } from "@chakra-ui/react"
+import { ListenerFn, RouterEvents } from "@tanstack/react-router"
 
 type RenderLoginPageParams = {
   authenticate?: (token: string) => void;
@@ -44,68 +44,68 @@ describe("routes/login", () => {
             </QueryClientProvider>
           </ChakraProvider>
         ),
-      });
+      })
     }
 
     it("should update the token and redirect to the home page when the login is successful", async () => {
-      const authenticateMock = vi.fn();
-      renderLoginPage({ authenticate: authenticateMock });
+      const authenticateMock = vi.fn()
+      renderLoginPage({ authenticate: authenticateMock })
 
-      const usernameInput = screen.getByLabelText(/username/i);
-      const passwordInput = screen.getByLabelText(/password/i);
-      const submitButton = screen.getByRole("button", { name: /login/i });
+      const usernameInput = screen.getByLabelText(/username/i)
+      const passwordInput = screen.getByLabelText(/password/i)
+      const submitButton = screen.getByRole("button", { name: /login/i })
 
       act(() => {
-        fireEvent.change(usernameInput, { target: { value: "valid_user" } });
-        fireEvent.change(passwordInput, { target: { value: "password" } });
-        fireEvent.click(submitButton);
-      });
+        fireEvent.change(usernameInput, { target: { value: "valid_user" } })
+        fireEvent.change(passwordInput, { target: { value: "password" } })
+        fireEvent.click(submitButton)
+      })
 
       await waitFor(() => {
-        expect(authenticateMock).toHaveBeenCalledWith("dummy_token");
-      });
-    });
+        expect(authenticateMock).toHaveBeenCalledWith("dummy_token")
+      })
+    })
 
     it("should show an error message when the login is unsuccessful", async () => {
-      renderLoginPage();
+      renderLoginPage()
 
-      const usernameInput = screen.getByLabelText(/username/i);
-      const passwordInput = screen.getByLabelText(/password/i);
-      const submitButton = screen.getByRole("button", { name: /login/i });
+      const usernameInput = screen.getByLabelText(/username/i)
+      const passwordInput = screen.getByLabelText(/password/i)
+      const submitButton = screen.getByRole("button", { name: /login/i })
 
       act(() => {
-        fireEvent.change(usernameInput, { target: { value: "invalid_user" } });
-        fireEvent.change(passwordInput, { target: { value: "password" } });
-        fireEvent.click(submitButton);
-      });
+        fireEvent.change(usernameInput, { target: { value: "invalid_user" } })
+        fireEvent.change(passwordInput, { target: { value: "password" } })
+        fireEvent.click(submitButton)
+      })
 
       await waitFor(() => {
-        expect(screen.getByText(/wrong credentials/i)).toBeInTheDocument();
-      });
-    });
+        expect(screen.getByText(/wrong credentials/i)).toBeInTheDocument()
+      })
+    })
 
     it("should show an generic error message when an unknown error happens", async () => {
-      renderLoginPage();
+      renderLoginPage()
 
-      const usernameInput = screen.getByLabelText(/username/i);
-      const passwordInput = screen.getByLabelText(/password/i);
-      const submitButton = screen.getByRole("button", { name: /login/i });
+      const usernameInput = screen.getByLabelText(/username/i)
+      const passwordInput = screen.getByLabelText(/password/i)
+      const submitButton = screen.getByRole("button", { name: /login/i })
 
       act(() => {
-        fireEvent.change(usernameInput, { target: { value: "error_user" } });
-        fireEvent.change(passwordInput, { target: { value: "password" } });
-        fireEvent.click(submitButton);
-      });
+        fireEvent.change(usernameInput, { target: { value: "error_user" } })
+        fireEvent.change(passwordInput, { target: { value: "password" } })
+        fireEvent.click(submitButton)
+      })
 
       await waitFor(() => {
         expect(
           screen.getByText(/an unknown error occured, please try again later/i),
-        ).toBeInTheDocument();
-      });
-    });
+        ).toBeInTheDocument()
+      })
+    })
 
     it("should automatically redirect to the home page if the user is already authenticated if no redirect URL specified", async () => {
-      const onBeforeNavigateMock = vi.fn();
+      const onBeforeNavigateMock = vi.fn()
       renderLoginPage({
         authState: {
           isAuthenticated: true,
@@ -113,19 +113,19 @@ describe("routes/login", () => {
           userId: "dummy_user_id",
         },
         onNavigate: onBeforeNavigateMock,
-      });
+      })
 
       await waitFor(() => {
         expect(onBeforeNavigateMock).toHaveBeenCalledWith(
           expect.objectContaining({
             toLocation: expect.objectContaining({ pathname: "/" }),
           }),
-        );
-      });
-    });
+        )
+      })
+    })
 
     it("should automatically redirect to the specified redirect URL if the user is already authenticated", async () => {
-      const onBeforeNavigateMock = vi.fn();
+      const onBeforeNavigateMock = vi.fn()
       renderLoginPage({
         authState: {
           isAuthenticated: true,
@@ -134,15 +134,15 @@ describe("routes/login", () => {
         },
         onNavigate: onBeforeNavigateMock,
         currentPath: "/login?redirect=/profile",
-      });
+      })
 
       await waitFor(() => {
         expect(onBeforeNavigateMock).toHaveBeenCalledWith(
           expect.objectContaining({
             toLocation: expect.objectContaining({ pathname: "/profile" }),
           }),
-        );
-      });
-    });
-  });
-});
+        )
+      })
+    })
+  })
+})

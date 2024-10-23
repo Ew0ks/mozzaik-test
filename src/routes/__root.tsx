@@ -5,18 +5,18 @@ import {
   Icon,
   HStack,
   StackDivider,
-} from "@chakra-ui/react";
+} from "@chakra-ui/react"
 import {
   createRootRouteWithContext,
   Link,
   Outlet,
-} from "@tanstack/react-router";
+} from "@tanstack/react-router"
 import {
   AuthenticationState,
   useAuthentication,
-} from "../contexts/authentication";
-import { UserDropdown } from "../components/user-dropdown";
-import { Plus } from "@phosphor-icons/react";
+} from "../contexts/authentication"
+import { UserDropdown } from "../components/user-dropdown"
+import { Plus } from "@phosphor-icons/react"
 
 type RouterContext = {
   authState: AuthenticationState;
@@ -24,7 +24,7 @@ type RouterContext = {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => {
-    const { state } = useAuthentication();
+    const { state } = useAuthentication()
     return (
       <Flex width="full" height="full" direction="column">
         {/* Header */}
@@ -59,6 +59,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
           <Outlet />
         </Flex>
       </Flex>
-    );
+    )
   },
-});
+})

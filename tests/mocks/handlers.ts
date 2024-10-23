@@ -1,4 +1,4 @@
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse } from "msw"
 
 const users = {
   dummy_user_id_1: {
@@ -16,7 +16,7 @@ const users = {
     username: "dummy_user_3",
     pictureUrl: "https://dummy.url/3",
   },
-};
+}
 
 const memes = [
   {
@@ -61,32 +61,32 @@ export const handlers = [
   http.post<{}, { username: string; password: string }>(
     "https://fetestapi.int.mozzaik365.net/api/authentication/login",
     async ({ request }) => {
-      const { username, password } = await request.json();
+      const { username, password } = await request.json()
       if (username === "valid_user" && password === "password") {
         return HttpResponse.json({
           jwt: "dummy_token",
-        });
+        })
       }
       if (username === "error_user") {
         return new HttpResponse(null, {
           status: 500,
-        });
+        })
       }
       return new HttpResponse(null, {
         status: 401,
-      });
+      })
     },
   ),
   http.get<{ id: string }>(
     "https://fetestapi.int.mozzaik365.net/api/users/:id",
     async ({ params }) => {
-      const user = users[params.id as keyof typeof users];
+      const user = users[params.id as keyof typeof users]
       if (user) {
-        return HttpResponse.json(user);
+        return HttpResponse.json(user)
       }
       return new HttpResponse(null, {
         status: 404,
-      });
+      })
     },
   ),
   http.get("https://fetestapi.int.mozzaik365.net/api/memes", async () => {
@@ -94,19 +94,19 @@ export const handlers = [
       total: memes.length,
       pageSize: memes.length,
       results: memes,
-    });
+    })
   }),
   http.get<{ id: string }>(
     "https://fetestapi.int.mozzaik365.net/api/memes/:id/comments",
     async ({ params }) => {
       const memeComments = comments.filter(
         (comment) => comment.memeId === params.id,
-      );
+      )
       return HttpResponse.json({
         total: memeComments.length,
         pageSize: memeComments.length,
         results: memeComments,
-      });
+      })
     },
   ),
-];
+]

@@ -1,5 +1,5 @@
-import { Box, Text, useDimensions } from "@chakra-ui/react";
-import { useMemo, useRef } from "react";
+import { Box, Text, useDimensions } from "@chakra-ui/react"
+import { useMemo, useRef } from "react"
 
 export type MemePictureProps = {
   pictureUrl: string;
@@ -11,22 +11,22 @@ export type MemePictureProps = {
   dataTestId?: string;
 };
 
-const REF_WIDTH = 800;
-const REF_HEIGHT = 450;
-const REF_FONT_SIZE = 36;
+const REF_WIDTH = 800
+const REF_HEIGHT = 450
+const REF_FONT_SIZE = 36
 
 export const MemePicture: React.FC<MemePictureProps> = ({
   pictureUrl,
   texts: rawTexts,
   dataTestId = '',
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const dimensions = useDimensions(containerRef, true);
-  const boxWidth = dimensions?.borderBox.width;
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dimensions = useDimensions(containerRef, true)
+  const boxWidth = dimensions?.borderBox.width
 
   const { height, fontSize, texts } = useMemo(() => {
     if (!boxWidth) {
-      return { height: 0, fontSize: 0, texts: rawTexts };
+      return { height: 0, fontSize: 0, texts: rawTexts }
     }
 
     return {
@@ -37,8 +37,8 @@ export const MemePicture: React.FC<MemePictureProps> = ({
         x: (boxWidth / REF_WIDTH) * text.x,
         y: (boxWidth / REF_WIDTH) * text.y,
       })),
-    };
-  }, [boxWidth, rawTexts]);
+    }
+  }, [boxWidth, rawTexts])
 
   return (
     <Box
@@ -74,5 +74,5 @@ export const MemePicture: React.FC<MemePictureProps> = ({
         </Text>
       ))}
     </Box>
-  );
-};
+  )
+}

@@ -1,25 +1,25 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string
 
 export class UnauthorizedError extends Error {
   constructor() {
-    super('Unauthorized');
+    super('Unauthorized')
   }
 }
 
 export class NotFoundError extends Error {
   constructor() {
-    super('Not Found');
+    super('Not Found')
   }
 }
 
 function checkStatus(response: Response) {
   if (response.status === 401) {
-    throw new UnauthorizedError();
+    throw new UnauthorizedError()
   }
   if (response.status === 404) {
-    throw new NotFoundError();
+    throw new NotFoundError()
   }
-  return response;
+  return response
 }
 
 export type LoginResponse = {
@@ -145,5 +145,5 @@ export async function createMemeComment(token: string, memeId: string, content: 
       'Authorization': `Bearer ${token}`
     },
     body: JSON.stringify({ content }),
-  }).then(res => checkStatus(res).json());
+  }).then(res => checkStatus(res).json())
 }

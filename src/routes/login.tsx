@@ -7,12 +7,12 @@ import {
   Input,
   Button,
   FormErrorMessage,
-} from "@chakra-ui/react";
-import { useMutation } from "@tanstack/react-query";
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { login, UnauthorizedError } from "../api";
-import { useAuthentication } from "../contexts/authentication";
+} from "@chakra-ui/react"
+import { useMutation } from "@tanstack/react-query"
+import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { SubmitHandler, useForm } from "react-hook-form"
+import { login, UnauthorizedError } from "../api"
+import { useAuthentication } from "../contexts/authentication"
 
 type SearchParams = {
   redirect?: string;
@@ -25,31 +25,31 @@ type Inputs = {
 
 function renderError(error: Error) {
   if (error instanceof UnauthorizedError) {
-    return <FormErrorMessage>Wrong credentials</FormErrorMessage>;
+    return <FormErrorMessage>Wrong credentials</FormErrorMessage>
   }
   return (
     <FormErrorMessage>
       An unknown error occured, please try again later
     </FormErrorMessage>
-  );
+  )
 }
 
 export const LoginPage: React.FC = () => {
-  const { redirect } = Route.useSearch();
-  const { state, authenticate } = useAuthentication();
+  const { redirect } = Route.useSearch()
+  const { state, authenticate } = useAuthentication()
   const { mutate, isPending, error } = useMutation({
     mutationFn: (data: Inputs) => login(data.username, data.password),
     onSuccess: ({ jwt }) => {
-      authenticate(jwt);
+      authenticate(jwt)
     }
-  });
-  const { register, handleSubmit } = useForm<Inputs>();
+  })
+  const { register, handleSubmit } = useForm<Inputs>()
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    mutate(data);
-  };
+    mutate(data)
+  }
 
   if (state.isAuthenticated) {
-    return <Navigate to={redirect ?? '/'} />;
+    return <Navigate to={redirect ?? '/'} />
   }
 
   return (
@@ -109,8 +109,8 @@ export const LoginPage: React.FC = () => {
         </form>
       </Flex>
     </Flex>
-  );
-};
+  )
+}
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search): SearchParams => {
@@ -119,4 +119,4 @@ export const Route = createFileRoute("/login")({
     }
   },
   component: LoginPage,
-});
+})
