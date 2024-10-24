@@ -29,7 +29,6 @@ import { Loader } from "../../components/loader"
 import { MemePicture } from "../../components/meme-picture"
 import { useCallback, useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
-import { isNil } from "ramda"
 
 export const MemeFeedPage: React.FC = () => {
   const token = useAuthToken()
@@ -47,18 +46,11 @@ export const MemeFeedPage: React.FC = () => {
     },
   })
 
-  const { isFetching, data } = useInfiniteQuery({
-    queryKey: ["memes", page],
+  const { isFetching, data, fetchNextPage } = useInfiniteQuery({
+    queryKey: ["memes"],
     refetchOnWindowFocus: false,
     initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages, lastPageParam, allPageParams) => {
-      console.log(
-        lastPage,
-        allPages,
-        lastPageParam,
-        allPageParams,
-        "lastPage, allPages, lastPageParam, allPageParams"
-      )
+    getNextPageParam: () => {
       return page + 1
     },
     queryFn: async () => {
@@ -72,6 +64,8 @@ export const MemeFeedPage: React.FC = () => {
           return { ...rawMeme, author }
         })
       )
+
+      setPage((previousPage) => previousPage + 1)
 
       return {
         list,
@@ -113,7 +107,6 @@ export const MemeFeedPage: React.FC = () => {
       }
       return memesWithAuthorAndComments; */
     },
-    placeholderData: (previousData) => previousData,
   })
   const { data: user } = useQuery({
     queryKey: ["user"],
@@ -132,9 +125,9 @@ export const MemeFeedPage: React.FC = () => {
       container.scrollTop + container.clientHeight >=
       container.scrollHeight - 2
     ) {
-      setPage((prevPage) => (prevPage + 1 < 10 ? prevPage + 1 : prevPage))
+      fetchNextPage()
     }
-  }, [setPage])
+  }, [])
 
   useEffect(() => {
     const container = document.getElementById("container")
