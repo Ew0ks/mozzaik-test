@@ -21,6 +21,7 @@ import {
   GetMemeCommentsResponse,
   getMemes,
   GetMemesResponse,
+  GetMemesResponseWithAuthor,
   getUserById,
   GetUserByIdResponse,
 } from "../../api"
@@ -29,10 +30,10 @@ import { Loader } from "../../components/loader"
 import { MemePicture } from "../../components/meme-picture"
 import { useCallback, useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
+import { isEmpty, isNil } from "ramda"
 
 export const MemeFeedPage: React.FC = () => {
   const token = useAuthToken()
-  const [page, setPage] = useState<number>(1)
   const [openedCommentSection, setOpenedCommentSection] = useState<
     string | null
   >(null)
@@ -49,13 +50,16 @@ export const MemeFeedPage: React.FC = () => {
   const { isFetching, data, fetchNextPage } = useInfiniteQuery({
     queryKey: ["memes"],
     refetchOnWindowFocus: false,
-    initialPageParam: 1,
-    getNextPageParam: () => {
-      return page + 1
+    initialPageParam: 16,
+    getNextPageParam: (lastPage: GetMemesResponseWithAuthor) => {
+      if (isEmpty(lastPage.list)) {
+        return undefined
+      }
+      return lastPage.page + 1
     },
-    queryFn: async () => {
-      console.log(page, "page")
-      const fetchedMemesList = await getMemes(token, page)
+    queryFn: async ({ pageParam }): Promise<GetMemesResponseWithAuthor> => {
+      console.log(pageParam, "pageParam")
+      const fetchedMemesList = await getMemes(token, Number(pageParam))
       const rawMemesList = fetchedMemesList.results
 
       const list = await Promise.all(
@@ -65,11 +69,9 @@ export const MemeFeedPage: React.FC = () => {
         })
       )
 
-      setPage((previousPage) => previousPage + 1)
-
       return {
         list,
-        page,
+        page: pageParam,
         size: fetchedMemesList.pageSize,
         total: fetchedMemesList.total,
       }
@@ -145,9 +147,6 @@ export const MemeFeedPage: React.FC = () => {
     () => console.log(openedCommentSection, "openedCommentSection"),
     [openedCommentSection]
   )
-  useEffect(() => console.log(data, "data"), [data])
-
-  console.log(isFetching, "isFetching")
 
   return (
     <Flex
