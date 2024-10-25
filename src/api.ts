@@ -114,6 +114,7 @@ export async function getMemes(
 
 export type GetMemeCommentsResponse = {
   total: number
+  page: number
   pageSize: number
   results: {
     id: string
@@ -121,6 +122,7 @@ export type GetMemeCommentsResponse = {
     memeId: string
     content: string
     createdAt: string
+    author: GetUserByIdResponse
   }[]
 }
 

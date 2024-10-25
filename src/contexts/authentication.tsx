@@ -8,7 +8,6 @@ import {
   useMemo,
   useState,
 } from "react"
-import { useNavigate } from "@tanstack/react-router"
 
 export type AuthenticationState =
   | {
@@ -36,7 +35,6 @@ export const AuthenticationProvider: React.FC<PropsWithChildren> = ({
   const [state, setState] = useState<AuthenticationState>({
     isAuthenticated: false,
   })
-  const navigate = useNavigate()
 
   // Fonction pour vérifier si le token est expiré
   const isTokenExpired = (token: string) => {
@@ -50,7 +48,7 @@ export const AuthenticationProvider: React.FC<PropsWithChildren> = ({
     if (savedToken) {
       if (isTokenExpired(savedToken)) {
         localStorage.removeItem("authToken")
-        navigate({ to: "/login" }) // Redirection si le token est expiré
+        setState({ isAuthenticated: false })
       } else {
         setState({
           isAuthenticated: true,
@@ -59,7 +57,7 @@ export const AuthenticationProvider: React.FC<PropsWithChildren> = ({
         })
       }
     }
-  }, [navigate])
+  }, [])
 
   const authenticate = useCallback(
     (token: string) => {
@@ -76,8 +74,7 @@ export const AuthenticationProvider: React.FC<PropsWithChildren> = ({
   const signout = useCallback(() => {
     localStorage.removeItem("authToken") // Retirer le token de localStorage
     setState({ isAuthenticated: false })
-    navigate({ to: "/login" }) // Redirection vers la page de connexion
-  }, [setState, navigate])
+  }, [setState])
 
   const contextValue = useMemo(
     () => ({ state, authenticate, signout }),
