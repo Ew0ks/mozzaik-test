@@ -19,8 +19,8 @@ import { UserDropdown } from "../components/user-dropdown"
 import { Plus } from "@phosphor-icons/react"
 
 type RouterContext = {
-  authState: AuthenticationState;
-};
+  authState: AuthenticationState
+}
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => {
