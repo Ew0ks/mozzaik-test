@@ -12,6 +12,7 @@ import {
   Text,
   Input,
   VStack,
+  Button,
 } from "@chakra-ui/react"
 import { CaretDown, CaretUp, Chat } from "@phosphor-icons/react"
 import { format } from "timeago.js"
@@ -20,17 +21,15 @@ import {
   getMemeComments,
   GetMemeCommentsResponse,
   getMemes,
-  GetMemesResponse,
   GetMemesResponseWithAuthor,
   getUserById,
-  GetUserByIdResponse,
 } from "../../api"
 import { useAuthToken } from "../../contexts/authentication"
 import { Loader } from "../../components/loader"
 import { MemePicture } from "../../components/meme-picture"
 import { useCallback, useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
-import { isEmpty, isNotEmpty, isNotNil } from "ramda"
+import { isEmpty, isNotNil } from "ramda"
 
 export const MemeFeedPage: React.FC = () => {
   const token = useAuthToken()
@@ -98,7 +97,6 @@ export const MemeFeedPage: React.FC = () => {
       return lastPage.page + 1
     },
     queryFn: async ({ pageParam }): Promise<GetMemeCommentsResponse> => {
-      console.log(pageParam, "pageParam")
       const fetchedMemesList = await getMemeComments(
         token,
         openedCommentSection,
@@ -127,39 +125,6 @@ export const MemeFeedPage: React.FC = () => {
     console.log(openedCommentSection, "openedCommentSection")
     console.log(comments, "comments")
   }, [openedCommentSection, comments])
-
-  /*       const remainingPages =
-        Math.ceil(firstPage.total / firstPage.pageSize) - 1;
-      for (let i = 0; i < remainingPages; i++) {
-        const page = await getMemes(token, i + 2);
-        memes.push(...page.results);
-      }
-      const memesWithAuthorAndComments = [];
-      for (let meme of memes) {
-        const author = await getUserById(token, meme.authorId);
-        const comments: GetMemeCommentsResponse["results"] = [];
-        const firstPage = await getMemeComments(token, meme.id, 1);
-        comments.push(...firstPage.results);
-        const remainingCommentPages =
-          Math.ceil(firstPage.total / firstPage.pageSize) - 1;
-        for (let i = 0; i < remainingCommentPages; i++) {
-          const page = await getMemeComments(token, meme.id, i + 2);
-          comments.push(...page.results);
-        }
-        const commentsWithAuthor: (GetMemeCommentsResponse["results"][0] & {
-          author: GetUserByIdResponse;
-        })[] = [];
-        for (let comment of comments) {
-          const author = await getUserById(token, comment.authorId);
-          commentsWithAuthor.push({ ...comment, author });
-        }
-        memesWithAuthorAndComments.push({
-          ...meme,
-          author,
-          comments: commentsWithAuthor,
-        });
-      }
-      return memesWithAuthorAndComments; */
 
   const { data: user } = useQuery({
     queryKey: ["user"],
@@ -320,10 +285,6 @@ export const MemeFeedPage: React.FC = () => {
                       </Flex>
                     </form>
                   </Box>
-
-                  {isFetchingComments && (
-                    <Loader data-testid="meme-comments-loader" />
-                  )}
                   <VStack align="stretch" spacing={4}>
                     {comments?.pages.map((pages) => {
                       return pages.results.map((comment) => {
@@ -375,6 +336,23 @@ export const MemeFeedPage: React.FC = () => {
                       })
                     })}
                   </VStack>
+
+                  {isFetchingComments && (
+                    <Loader data-testid="meme-comments-loader" />
+                  )}
+                  {parseInt(meme.commentsCount) > 10 && (
+                    <Button
+                      onClick={() => fetchNextCommentsPage()}
+                      color="white"
+                      colorScheme="cyan"
+                      mt={4}
+                      size="sm"
+                      type="submit"
+                      width="full"
+                    >
+                      Voir plus de commentaires
+                    </Button>
+                  )}
                 </Collapse>
               </VStack>
             )
