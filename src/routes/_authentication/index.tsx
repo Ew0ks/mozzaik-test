@@ -85,6 +85,7 @@ export const MemeFeedPage: React.FC = () => {
     isFetching: isFetchingComments,
     data: comments,
     fetchNextPage: fetchNextCommentsPage,
+    hasNextPage: hasNextCommentsPage,
   } = useInfiniteQuery({
     queryKey: ["comments", openedCommentSection],
     refetchOnWindowFocus: false,
@@ -160,8 +161,8 @@ export const MemeFeedPage: React.FC = () => {
   }, [handleScroll, isFetchingMemeFeed])
 
   useEffect(
-    () => console.log(openedCommentSection, "openedCommentSection"),
-    [openedCommentSection]
+    () => console.log(hasNextCommentsPage, "hasNextCommentsPage"),
+    [hasNextCommentsPage]
   )
 
   return (
@@ -340,7 +341,7 @@ export const MemeFeedPage: React.FC = () => {
                   {isFetchingComments && (
                     <Loader data-testid="meme-comments-loader" />
                   )}
-                  {parseInt(meme.commentsCount) > 10 && (
+                  {parseInt(meme.commentsCount) > 10 && hasNextCommentsPage && (
                     <Button
                       onClick={() => fetchNextCommentsPage()}
                       color="white"
