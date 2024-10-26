@@ -29,20 +29,22 @@ import { Loader } from "../../components/loader"
 import { MemePicture } from "../../components/meme-picture"
 import { useCallback, useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
-import { isEmpty, isNotNil } from "ramda"
+import { isEmpty, isNotEmpty } from "ramda"
 
 export const MemeFeedPage: React.FC = () => {
   const token = useAuthToken()
-  const [openedCommentSection, setOpenedCommentSection] = useState<
-    string | null
-  >(null)
+  const [openedCommentSection, setOpenedCommentSection] = useState<string>("")
   const [commentContent, setCommentContent] = useState<{
     [key: string]: string
   }>({})
 
   const { mutate } = useMutation({
-    mutationFn: async (data: { memeId: string; content: string }) => {
-      await createMemeComment(token, data.memeId, data.content)
+    mutationFn: async (data: { memeId: string; content: string }) =>
+      await createMemeComment(token, data.memeId, data.content),
+    onSuccess: (data) => {
+      console.log(data, "data success")
+      setCommentContent({})
+      refetch()
     },
   })
 
@@ -84,12 +86,13 @@ export const MemeFeedPage: React.FC = () => {
   const {
     isFetching: isFetchingComments,
     data: comments,
+    refetch,
     fetchNextPage: fetchNextCommentsPage,
     hasNextPage: hasNextCommentsPage,
   } = useInfiniteQuery({
     queryKey: ["comments", openedCommentSection],
     refetchOnWindowFocus: false,
-    enabled: isNotNil(openedCommentSection),
+    enabled: isNotEmpty(openedCommentSection),
     initialPageParam: 1,
     getNextPageParam: (lastPage: GetMemeCommentsResponse) => {
       if (isEmpty(lastPage.results) || isEmpty(openedCommentSection)) {
@@ -122,7 +125,7 @@ export const MemeFeedPage: React.FC = () => {
   })
 
   useEffect(() => {
-    console.log(isNotNil(openedCommentSection))
+    console.log(isNotEmpty(openedCommentSection))
     console.log(openedCommentSection, "openedCommentSection")
     console.log(comments, "comments")
   }, [openedCommentSection, comments])
@@ -232,12 +235,12 @@ export const MemeFeedPage: React.FC = () => {
                         cursor="pointer"
                         onClick={() =>
                           setOpenedCommentSection(
-                            openedCommentSection === meme.id ? null : meme.id
+                            openedCommentSection === meme.id ? "" : meme.id
                           )
                         }
                       >
                         <Text data-testid={`meme-comments-count-${meme.id}`}>
-                          {meme.commentsCount} comments
+                          {`${meme.commentsCount} comment${parseInt(meme.commentsCount) > 1 ? "s" : ""}`}
                         </Text>
                       </LinkOverlay>
                       <Icon
@@ -281,7 +284,7 @@ export const MemeFeedPage: React.FC = () => {
                               [meme.id]: event.target.value,
                             })
                           }}
-                          value={commentContent[meme.id]}
+                          value={commentContent[meme.id] || ""}
                         />
                       </Flex>
                     </form>
