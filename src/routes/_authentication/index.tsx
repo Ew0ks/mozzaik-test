@@ -15,7 +15,6 @@ import {
   Button,
 } from "@chakra-ui/react"
 import { CaretDown, CaretUp, Chat } from "@phosphor-icons/react"
-import { format } from "timeago.js"
 import {
   createMemeComment,
   getMemeComments,
@@ -26,23 +25,26 @@ import {
 } from "../../api"
 import { useAuthToken } from "../../contexts/authentication"
 import { Loader } from "../../components/loader"
-import { MemePicture } from "../../components/meme-picture"
 import { useCallback, useEffect, useState } from "react"
 import { jwtDecode } from "jwt-decode"
-import { isEmpty, isNotNil } from "ramda"
+import { isEmpty, isNotEmpty } from "ramda"
+import { Comment } from "../../components/comment"
+import { Meme } from "../../components/meme"
 
 export const MemeFeedPage: React.FC = () => {
   const token = useAuthToken()
-  const [openedCommentSection, setOpenedCommentSection] = useState<
-    string | null
-  >(null)
+  const [openedCommentSection, setOpenedCommentSection] = useState<string>("")
   const [commentContent, setCommentContent] = useState<{
     [key: string]: string
   }>({})
 
   const { mutate } = useMutation({
-    mutationFn: async (data: { memeId: string; content: string }) => {
-      await createMemeComment(token, data.memeId, data.content)
+    mutationFn: async (data: { memeId: string; content: string }) =>
+      await createMemeComment(token, data.memeId, data.content),
+    onSuccess: (data) => {
+      console.log(data, "data success")
+      setCommentContent({})
+      refetch()
     },
   })
 
@@ -84,11 +86,13 @@ export const MemeFeedPage: React.FC = () => {
   const {
     isFetching: isFetchingComments,
     data: comments,
+    refetch,
     fetchNextPage: fetchNextCommentsPage,
+    hasNextPage: hasNextCommentsPage,
   } = useInfiniteQuery({
     queryKey: ["comments", openedCommentSection],
     refetchOnWindowFocus: false,
-    enabled: isNotNil(openedCommentSection),
+    enabled: isNotEmpty(openedCommentSection),
     initialPageParam: 1,
     getNextPageParam: (lastPage: GetMemeCommentsResponse) => {
       if (isEmpty(lastPage.results) || isEmpty(openedCommentSection)) {
@@ -120,12 +124,6 @@ export const MemeFeedPage: React.FC = () => {
     },
   })
 
-  useEffect(() => {
-    console.log(isNotNil(openedCommentSection))
-    console.log(openedCommentSection, "openedCommentSection")
-    console.log(comments, "comments")
-  }, [openedCommentSection, comments])
-
   const { data: user } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
@@ -138,7 +136,6 @@ export const MemeFeedPage: React.FC = () => {
 
     if (!container) return
 
-    // Utilisation d'une petite tolérance pour la comparaison
     if (
       container.scrollTop + container.clientHeight >=
       container.scrollHeight - 2
@@ -160,8 +157,8 @@ export const MemeFeedPage: React.FC = () => {
   }, [handleScroll, isFetchingMemeFeed])
 
   useEffect(
-    () => console.log(openedCommentSection, "openedCommentSection"),
-    [openedCommentSection]
+    () => console.log(hasNextCommentsPage, "hasNextCommentsPage"),
+    [hasNextCommentsPage]
   )
 
   return (
@@ -182,47 +179,7 @@ export const MemeFeedPage: React.FC = () => {
           return pages.list.map((meme) => {
             return (
               <VStack key={meme.id} p={4} width="full" align="stretch">
-                <Flex justifyContent="space-between" alignItems="center">
-                  <Flex>
-                    <Avatar
-                      borderWidth="1px"
-                      borderColor="gray.300"
-                      size="xs"
-                      name={meme.author.username}
-                      src={meme.author.pictureUrl}
-                    />
-                    <Text ml={2} data-testid={`meme-author-${meme.id}`}>
-                      {meme.author.username}
-                    </Text>
-                  </Flex>
-                  <Text fontStyle="italic" color="gray.500" fontSize="small">
-                    {format(meme.createdAt)}
-                  </Text>
-                </Flex>
-                <MemePicture
-                  pictureUrl={meme.pictureUrl}
-                  texts={meme.texts}
-                  dataTestId={`meme-picture-${meme.id}`}
-                />
-                <Box>
-                  <Text fontWeight="bold" fontSize="medium" mb={2}>
-                    Description:{" "}
-                  </Text>
-                  <Box
-                    p={2}
-                    borderRadius={8}
-                    border="1px solid"
-                    borderColor="gray.100"
-                  >
-                    <Text
-                      color="gray.500"
-                      whiteSpace="pre-line"
-                      data-testid={`meme-description-${meme.id}`}
-                    >
-                      {meme.description}
-                    </Text>
-                  </Box>
-                </Box>
+                <Meme meme={meme} />
                 <LinkBox as={Box} py={2} borderBottom="1px solid black">
                   <Flex justifyContent="space-between" alignItems="center">
                     <Flex alignItems="center">
@@ -231,12 +188,12 @@ export const MemeFeedPage: React.FC = () => {
                         cursor="pointer"
                         onClick={() =>
                           setOpenedCommentSection(
-                            openedCommentSection === meme.id ? null : meme.id
+                            openedCommentSection === meme.id ? "" : meme.id
                           )
                         }
                       >
                         <Text data-testid={`meme-comments-count-${meme.id}`}>
-                          {meme.commentsCount} comments
+                          {`${meme.commentsCount} comment${parseInt(meme.commentsCount) > 1 ? "s" : ""}`}
                         </Text>
                       </LinkOverlay>
                       <Icon
@@ -280,7 +237,7 @@ export const MemeFeedPage: React.FC = () => {
                               [meme.id]: event.target.value,
                             })
                           }}
-                          value={commentContent[meme.id]}
+                          value={commentContent[meme.id] || ""}
                         />
                       </Flex>
                     </form>
@@ -288,59 +245,15 @@ export const MemeFeedPage: React.FC = () => {
                   <VStack align="stretch" spacing={4}>
                     {comments?.pages.map((pages) => {
                       return pages.results.map((comment) => {
-                        return (
-                          <Flex key={comment.id}>
-                            <Avatar
-                              borderWidth="1px"
-                              borderColor="gray.300"
-                              size="sm"
-                              name={comment.author.username}
-                              src={comment.author.pictureUrl}
-                              mr={2}
-                            />
-                            <Box
-                              p={2}
-                              borderRadius={8}
-                              bg="gray.50"
-                              flexGrow={1}
-                            >
-                              <Flex
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Flex>
-                                  <Text
-                                    data-testid={`meme-comment-author-${meme.id}-${comment.id}`}
-                                  >
-                                    {comment.author.username}
-                                  </Text>
-                                </Flex>
-                                <Text
-                                  fontStyle="italic"
-                                  color="gray.500"
-                                  fontSize="small"
-                                >
-                                  {format(comment.createdAt)}
-                                </Text>
-                              </Flex>
-                              <Text
-                                color="gray.500"
-                                whiteSpace="pre-line"
-                                data-testid={`meme-comment-content-${meme.id}-${comment.id}`}
-                              >
-                                {comment.content}
-                              </Text>
-                            </Box>
-                          </Flex>
-                        )
+                        return <Comment comment={comment} memeId={meme.id} />
                       })
                     })}
-                  </VStack>
 
-                  {isFetchingComments && (
-                    <Loader data-testid="meme-comments-loader" />
-                  )}
-                  {parseInt(meme.commentsCount) > 10 && (
+                    {isFetchingComments && (
+                      <Loader data-testid="meme-comments-loader" />
+                    )}
+                  </VStack>
+                  {parseInt(meme.commentsCount) > 10 && hasNextCommentsPage && (
                     <Button
                       onClick={() => fetchNextCommentsPage()}
                       color="white"
