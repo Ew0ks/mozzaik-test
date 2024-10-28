@@ -45,10 +45,15 @@ export const MemePicture: React.FC<MemePictureProps> = ({
 
   const handleDrag = (_: DraggableEvent, dragElement: DraggableData) => {
     if (isNil(indexDragged)) return
+    console.log({ x: dragElement.x, y: Math.round(dragElement.y) }, "drag")
     setTexts((prevTexts: MemePictureProps["texts"]) =>
       prevTexts.map((text, i) =>
         i === indexDragged
-          ? { ...text, x: dragElement.x, y: dragElement.y }
+          ? {
+              ...text,
+              x: Math.round(dragElement.x),
+              y: Math.round(dragElement.y),
+            }
           : text
       )
     )
@@ -102,6 +107,7 @@ export const MemePicture: React.FC<MemePictureProps> = ({
               position="absolute"
               left={text.x}
               top={text.y}
+              display="inline-block"
               fontSize={fontSize}
               color="white"
               fontFamily="Impact"
