@@ -1,15 +1,19 @@
 import { Box, Text, useDimensions } from "@chakra-ui/react"
-import { useMemo, useRef } from "react"
+import { isNil } from "ramda"
+import { useMemo, useRef, useState } from "react"
+import Draggable, { DraggableData, DraggableEvent } from "react-draggable"
 
 export type MemePictureProps = {
-  pictureUrl: string;
+  pictureUrl: string
   texts: {
-    content: string;
-    x: number;
-    y: number;
-  }[];
-  dataTestId?: string;
-};
+    content: string
+    x: number
+    y: number
+  }[]
+  dataTestId?: string
+  isEditorMode?: boolean
+  setTexts?: (updatedTexts: { content: string; x: number; y: number }[]) => void
+}
 
 const REF_WIDTH = 800
 const REF_HEIGHT = 450
@@ -17,28 +21,38 @@ const REF_FONT_SIZE = 36
 
 export const MemePicture: React.FC<MemePictureProps> = ({
   pictureUrl,
-  texts: rawTexts,
-  dataTestId = '',
+  texts,
+  dataTestId = "",
+  isEditorMode = false,
+  setTexts = () => {},
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(containerRef, true)
   const boxWidth = dimensions?.borderBox.width
 
-  const { height, fontSize, texts } = useMemo(() => {
+  const [indexDragged, setIndexDragged] = useState<number | null>(null)
+
+  const { height, fontSize } = useMemo(() => {
     if (!boxWidth) {
-      return { height: 0, fontSize: 0, texts: rawTexts }
+      return { height: 0, fontSize: 0 }
     }
 
     return {
       height: (boxWidth / REF_WIDTH) * REF_HEIGHT,
       fontSize: (boxWidth / REF_WIDTH) * REF_FONT_SIZE,
-      texts: rawTexts.map((text) => ({
-        ...text,
-        x: (boxWidth / REF_WIDTH) * text.x,
-        y: (boxWidth / REF_WIDTH) * text.y,
-      })),
     }
-  }, [boxWidth, rawTexts])
+  }, [boxWidth])
+
+  const handleDrag = (_: DraggableEvent, dragElement: DraggableData) => {
+    if (isNil(indexDragged)) return
+    setTexts((prevTexts: MemePictureProps["texts"]) =>
+      prevTexts.map((text, i) =>
+        i === indexDragged
+          ? { ...text, x: dragElement.x, y: dragElement.y }
+          : text
+      )
+    )
+  }
 
   return (
     <Box
@@ -56,22 +70,51 @@ export const MemePicture: React.FC<MemePictureProps> = ({
       data-testid={dataTestId}
     >
       {texts.map((text, index) => (
-        <Text
-          key={index}
-          position="absolute"
-          left={text.x}
-          top={text.y}
-          fontSize={fontSize}
-          color="white"
-          fontFamily="Impact"
-          fontWeight="bold"
-          userSelect="none"
-          textTransform="uppercase"
-          style={{ WebkitTextStroke: "1px black" }}
-          data-testid={`${dataTestId}-text-${index}`}
-        >
-          {text.content}
-        </Text>
+        <>
+          {isEditorMode ? (
+            <Draggable
+              position={{ x: text.x, y: text.y }}
+              bounds="parent"
+              onMouseDown={() => setIndexDragged(index)}
+              onDrag={(e, dragElement) => {
+                handleDrag(e, dragElement)
+              }}
+            >
+              <Text
+                key={index}
+                fontSize={fontSize}
+                color="white"
+                fontFamily="Impact"
+                fontWeight="bold"
+                display="inline-block"
+                userSelect="none"
+                cursor="move"
+                textTransform="uppercase"
+                style={{ WebkitTextStroke: "1px black" }}
+                data-testid={`${dataTestId}-text-${index}`}
+              >
+                {text.content}
+              </Text>
+            </Draggable>
+          ) : (
+            <Text
+              key={index}
+              position="absolute"
+              left={text.x}
+              top={text.y}
+              fontSize={fontSize}
+              color="white"
+              fontFamily="Impact"
+              fontWeight="bold"
+              userSelect="none"
+              textTransform="uppercase"
+              style={{ WebkitTextStroke: "1px black" }}
+              data-testid={`${dataTestId}-text-${index}`}
+            >
+              {text.content}
+            </Text>
+          )}
+        </>
       ))}
     </Box>
   )

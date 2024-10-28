@@ -21,13 +21,25 @@ export const Route = createFileRoute("/_authentication/create")({
 })
 
 type Picture = {
-  url: string;
-  file: File;
-};
+  url: string
+  file: File
+}
 
 function CreateMemePage() {
   const [picture, setPicture] = useState<Picture | null>(null)
   const [texts, setTexts] = useState<MemePictureProps["texts"]>([])
+
+  const handleSubmit = () => {
+    console.log({ ...picture, texts }, "submit")
+  }
+
+  const handleCaptionChange = (index: number, newText: string) => {
+    setTexts((prevTexts) =>
+      prevTexts.map((text, i) =>
+        i === index ? { ...text, content: newText } : text
+      )
+    )
+  }
 
   const handleDrop = (file: File) => {
     setPicture({
@@ -37,8 +49,8 @@ function CreateMemePage() {
   }
 
   const handleAddCaptionButtonClick = () => {
-    setTexts([
-      ...texts,
+    setTexts((previousTexts) => [
+      ...previousTexts,
       {
         content: `New caption ${texts.length + 1}`,
         x: Math.random() * 400,
@@ -59,6 +71,8 @@ function CreateMemePage() {
     return {
       pictureUrl: picture.url,
       texts,
+      isEditorMode: true,
+      setTexts: setTexts,
     }
   }, [picture, texts])
 
@@ -94,7 +108,12 @@ function CreateMemePage() {
           <VStack>
             {texts.map((text, index) => (
               <Flex width="full">
-                <Input key={index} value={text.content} mr={1} />
+                <Input
+                  key={index}
+                  value={text.content}
+                  onChange={(e) => handleCaptionChange(index, e.target.value)}
+                  mr={1}
+                />
                 <IconButton
                   onClick={() => handleDeleteCaptionButtonClick(index)}
                   aria-label="Delete caption"
@@ -132,6 +151,7 @@ function CreateMemePage() {
             width="full"
             color="white"
             isDisabled={memePicture === undefined}
+            onClick={() => handleSubmit()}
           >
             Submit
           </Button>
