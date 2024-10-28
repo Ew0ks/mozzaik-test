@@ -1,7 +1,7 @@
 import { Box, Text, useDimensions } from "@chakra-ui/react"
 import { isNil } from "ramda"
 import { useMemo, useRef, useState } from "react"
-import Draggable, { DraggableData, DraggableEvent } from "react-draggable"
+import DraggableCore, { DraggableData, DraggableEvent } from "react-draggable"
 
 export type MemePictureProps = {
   pictureUrl: string
@@ -28,7 +28,8 @@ export const MemePicture: React.FC<MemePictureProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(containerRef, true)
-  const boxWidth = dimensions?.borderBox.width
+  const boxWidth: number | undefined = dimensions?.borderBox.width
+  const boxHeight = dimensions?.borderBox.height
 
   const [indexDragged, setIndexDragged] = useState<number | null>(null)
 
@@ -44,15 +45,21 @@ export const MemePicture: React.FC<MemePictureProps> = ({
   }, [boxWidth])
 
   const handleDrag = (_: DraggableEvent, dragElement: DraggableData) => {
-    if (isNil(indexDragged)) return
-    console.log({ x: dragElement.x, y: Math.round(dragElement.y) }, "drag")
+    if (isNil(indexDragged) || isNil(boxWidth) || isNil(boxHeight)) return
+    console.log(
+      {
+        x: Math.round((dragElement.x * 100) / boxWidth),
+        y: Math.round((dragElement.y * 100) / boxHeight),
+      },
+      "drag"
+    )
     setTexts((prevTexts: MemePictureProps["texts"]) =>
       prevTexts.map((text, i) =>
         i === indexDragged
           ? {
               ...text,
-              x: Math.round(dragElement.x),
-              y: Math.round(dragElement.y),
+              x: Math.round((dragElement.x * 100) / boxWidth),
+              y: Math.round((dragElement.y * 100) / boxHeight),
             }
           : text
       )
@@ -77,9 +84,8 @@ export const MemePicture: React.FC<MemePictureProps> = ({
       {texts.map((text, index) => (
         <>
           {isEditorMode ? (
-            <Draggable
-              position={{ x: text.x, y: text.y }}
-              bounds="parent"
+            <DraggableCore
+              axis="none"
               onMouseDown={() => setIndexDragged(index)}
               onDrag={(e, dragElement) => {
                 handleDrag(e, dragElement)
@@ -88,6 +94,10 @@ export const MemePicture: React.FC<MemePictureProps> = ({
               <Text
                 key={index}
                 fontSize={fontSize}
+                position="absolute"
+                left={`${text.x}%`}
+                top={`${text.y}%`}
+                translateY="0 !important"
                 color="white"
                 fontFamily="Impact"
                 fontWeight="bold"
@@ -100,13 +110,13 @@ export const MemePicture: React.FC<MemePictureProps> = ({
               >
                 {text.content}
               </Text>
-            </Draggable>
+            </DraggableCore>
           ) : (
             <Text
               key={index}
               position="absolute"
-              left={text.x}
-              top={text.y}
+              left={`${text.x}%`}
+              top={`${text.y}%`}
               display="inline-block"
               fontSize={fontSize}
               color="white"

@@ -124,8 +124,8 @@ function CreateMemePage() {
       ...previousTexts,
       {
         content: `New caption ${texts.length + 1}`,
-        x: Math.round(Math.random() * 400),
-        y: Math.round(Math.random() * 225),
+        x: Math.round(Math.random() * 100),
+        y: Math.round(Math.random() * 75),
       },
     ])
   }
