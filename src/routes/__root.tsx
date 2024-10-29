@@ -10,6 +10,7 @@ import {
   createRootRouteWithContext,
   Link,
   Outlet,
+  useNavigate,
 } from "@tanstack/react-router"
 import {
   AuthenticationState,
@@ -25,6 +26,7 @@ type RouterContext = {
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => {
     const { state } = useAuthentication()
+    const navigate = useNavigate()
     return (
       <Flex width="full" height="full" direction="column">
         {/* Header */}
@@ -35,7 +37,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
           boxShadow="md"
         >
           {/* Title */}
-          <Heading size="lg" color="white">
+          <Heading
+            size="lg"
+            color="white"
+            cursor="pointer"
+            onClick={() => navigate({ to: "/" })}
+          >
             MemeFactory
           </Heading>
           {state.isAuthenticated && (

@@ -75,7 +75,7 @@ export const handlers = [
       return new HttpResponse(null, {
         status: 401,
       })
-    },
+    }
   ),
   http.get<{ id: string }>(
     "https://fetestapi.int.mozzaik365.net/api/users/:id",
@@ -87,7 +87,7 @@ export const handlers = [
       return new HttpResponse(null, {
         status: 404,
       })
-    },
+    }
   ),
   http.get("https://fetestapi.int.mozzaik365.net/api/memes", async () => {
     return HttpResponse.json({
@@ -100,13 +100,26 @@ export const handlers = [
     "https://fetestapi.int.mozzaik365.net/api/memes/:id/comments",
     async ({ params }) => {
       const memeComments = comments.filter(
-        (comment) => comment.memeId === params.id,
+        (comment) => comment.memeId === params.id
       )
       return HttpResponse.json({
         total: memeComments.length,
         pageSize: memeComments.length,
         results: memeComments,
       })
-    },
+    }
+  ),
+  http.post<{ id: string }>(
+    "https://fetestapi.int.mozzaik365.net/api/memes/:id/comments",
+    async ({ params }) => {
+      const memeComments = comments.filter(
+        (comment) => comment.memeId === params.id
+      )
+      return HttpResponse.json({
+        total: memeComments.length,
+        pageSize: memeComments.length,
+        results: memeComments,
+      })
+    }
   ),
 ]
