@@ -11,11 +11,11 @@ import { ChakraProvider } from "@chakra-ui/react"
 import { ListenerFn, RouterEvents } from "@tanstack/react-router"
 
 type RenderLoginPageParams = {
-  authenticate?: (token: string) => void;
-  authState?: AuthenticationState;
-  onNavigate?: ListenerFn<RouterEvents["onBeforeNavigate"]>;
-  currentPath?: string;
-};
+  authenticate?: (token: string) => void
+  authState?: AuthenticationState
+  onNavigate?: ListenerFn<RouterEvents["onBeforeNavigate"]>
+  currentPath?: string
+}
 
 describe("routes/login", () => {
   describe("LoginPage", () => {
@@ -99,7 +99,7 @@ describe("routes/login", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/an unknown error occured, please try again later/i),
+          screen.getByText(/an unknown error occured, please try again later/i)
         ).toBeInTheDocument()
       })
     })
@@ -119,7 +119,7 @@ describe("routes/login", () => {
         expect(onBeforeNavigateMock).toHaveBeenCalledWith(
           expect.objectContaining({
             toLocation: expect.objectContaining({ pathname: "/" }),
-          }),
+          })
         )
       })
     })
@@ -140,7 +140,7 @@ describe("routes/login", () => {
         expect(onBeforeNavigateMock).toHaveBeenCalledWith(
           expect.objectContaining({
             toLocation: expect.objectContaining({ pathname: "/profile" }),
-          }),
+          })
         )
       })
     })

@@ -223,6 +223,7 @@ export const MemeFeedPage: React.FC = () => {
                           mr={2}
                         />
                         <Input
+                          data-testid={`meme-comments-input-${meme.id}`}
                           placeholder="Type your comment here..."
                           onChange={(event) => {
                             setCommentContent({
@@ -233,6 +234,10 @@ export const MemeFeedPage: React.FC = () => {
                           value={commentContent[meme.id] || ""}
                         />
                       </Flex>
+                      <Button
+                        data-testid={`meme-comments-submit-${meme.id}`}
+                        display="none"
+                      />
                     </form>
                   </Box>
                   <VStack align="stretch" spacing={4}>

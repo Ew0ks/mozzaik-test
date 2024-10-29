@@ -157,9 +157,8 @@ function CreateMemePage() {
         <Box p={4} flexGrow={1} height={0} overflowY="auto">
           <VStack>
             {texts.map((text, index) => (
-              <Flex width="full">
+              <Flex width="full" key={index}>
                 <Input
-                  key={index}
                   value={text.content}
                   onChange={(e) => handleCaptionChange(index, e.target.value)}
                   mr={1}

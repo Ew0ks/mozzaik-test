@@ -1,6 +1,12 @@
 import { Box, Text, useDimensions } from "@chakra-ui/react"
 import { isNil } from "ramda"
-import { useMemo, useRef, useState } from "react"
+import React, {
+  Dispatch,
+  SetStateAction,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import DraggableCore, { DraggableData, DraggableEvent } from "react-draggable"
 
 export type MemePictureProps = {
@@ -12,7 +18,9 @@ export type MemePictureProps = {
   }[]
   dataTestId?: string
   isEditorMode?: boolean
-  setTexts?: (updatedTexts: { content: string; x: number; y: number }[]) => void
+  setTexts?: Dispatch<
+    SetStateAction<{ content: string; x: number; y: number }[]>
+  >
 }
 
 const REF_WIDTH = 800
@@ -75,7 +83,7 @@ export const MemePicture: React.FC<MemePictureProps> = ({
       data-testid={dataTestId}
     >
       {texts.map((text, index) => (
-        <>
+        <React.Fragment key={index}>
           {isEditorMode ? (
             <DraggableCore
               axis="none"
@@ -85,7 +93,6 @@ export const MemePicture: React.FC<MemePictureProps> = ({
               }}
             >
               <Text
-                key={index}
                 fontSize={fontSize}
                 position="absolute"
                 left={`${text.x}%`}
@@ -123,7 +130,7 @@ export const MemePicture: React.FC<MemePictureProps> = ({
               {text.content}
             </Text>
           )}
-        </>
+        </React.Fragment>
       ))}
     </Box>
   )
