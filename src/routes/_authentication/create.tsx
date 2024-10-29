@@ -10,24 +10,82 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react"
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { MemeEditor } from "../../components/meme-editor"
 import { useMemo, useState } from "react"
 import { MemePictureProps } from "../../components/meme-picture"
 import { Plus, Trash } from "@phosphor-icons/react"
+import { useMutation } from "@tanstack/react-query"
+import { CreateMeme, createMeme } from "../../api"
+import { useAuthToken } from "../../contexts/authentication"
+import { isNil, path, trim } from "ramda"
 
 export const Route = createFileRoute("/_authentication/create")({
   component: CreateMemePage,
 })
 
 type Picture = {
-  url: string;
-  file: File;
-};
+  url: string
+  file: File
+}
 
 function CreateMemePage() {
+  const token = useAuthToken()
+  const navigate = useNavigate({ from: "/create" })
+
   const [picture, setPicture] = useState<Picture | null>(null)
   const [texts, setTexts] = useState<MemePictureProps["texts"]>([])
+  const [memeDescription, setMemeDescription] = useState<string>("")
+
+  function objectToFormData(obj: Record<string, unknown>) {
+    const formData = new FormData()
+
+    Object.keys(obj).map((key) => {
+      const value = obj[key]
+
+      if (Array.isArray(value)) {
+        value.map((item, index) => {
+          Object.keys(item).map((keySec) => {
+            const nestedValue = path([key, index, keySec], obj)
+            formData.append(
+              `${key}[${index}][${keySec}]`,
+              nestedValue as string
+            )
+          })
+        })
+      } else {
+        formData.append(key, value as string)
+      }
+    })
+
+    return formData
+  }
+
+  const { mutate } = useMutation({
+    mutationFn: async (content: FormData) => await createMeme(token, content),
+    onSuccess: () => {
+      navigate({ to: "/" })
+    },
+  })
+
+  const handleSubmit = async () => {
+    if (isNil(picture)) return
+    const data: CreateMeme = {
+      picture: picture.file,
+      texts,
+      description: memeDescription,
+    }
+    const payload = objectToFormData(data)
+    mutate(payload)
+  }
+
+  const handleCaptionChange = (index: number, newText: string) => {
+    setTexts((prevTexts) =>
+      prevTexts.map((text, i) =>
+        i === index ? { ...text, content: newText } : text
+      )
+    )
+  }
 
   const handleDrop = (file: File) => {
     setPicture({
@@ -37,12 +95,12 @@ function CreateMemePage() {
   }
 
   const handleAddCaptionButtonClick = () => {
-    setTexts([
-      ...texts,
+    setTexts((previousTexts) => [
+      ...previousTexts,
       {
         content: `New caption ${texts.length + 1}`,
-        x: Math.random() * 400,
-        y: Math.random() * 225,
+        x: 0,
+        y: 0,
       },
     ])
   }
@@ -59,6 +117,8 @@ function CreateMemePage() {
     return {
       pictureUrl: picture.url,
       texts,
+      isEditorMode: true,
+      setTexts: setTexts,
     }
   }, [picture, texts])
 
@@ -76,7 +136,11 @@ function CreateMemePage() {
             <Heading as="h2" size="md" mb={2}>
               Describe your meme
             </Heading>
-            <Textarea placeholder="Type your description here..." />
+            <Textarea
+              placeholder="Type your description here..."
+              value={memeDescription}
+              onChange={(e) => setMemeDescription(e.target.value)}
+            />
           </Box>
         </VStack>
       </Box>
@@ -94,7 +158,12 @@ function CreateMemePage() {
           <VStack>
             {texts.map((text, index) => (
               <Flex width="full">
-                <Input key={index} value={text.content} mr={1} />
+                <Input
+                  key={index}
+                  value={text.content}
+                  onChange={(e) => handleCaptionChange(index, e.target.value)}
+                  mr={1}
+                />
                 <IconButton
                   onClick={() => handleDeleteCaptionButtonClick(index)}
                   aria-label="Delete caption"
@@ -131,7 +200,10 @@ function CreateMemePage() {
             size="sm"
             width="full"
             color="white"
-            isDisabled={memePicture === undefined}
+            isDisabled={
+              memePicture === undefined || !trim(memeDescription).length
+            }
+            onClick={() => handleSubmit()}
           >
             Submit
           </Button>
