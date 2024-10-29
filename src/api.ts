@@ -175,7 +175,7 @@ export async function createMemeComment(
 }
 
 export type CreateMeme = {
-  picture: string
+  picture: File
   description: string
   texts: {
     content: string

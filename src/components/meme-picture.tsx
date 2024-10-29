@@ -29,7 +29,6 @@ export const MemePicture: React.FC<MemePictureProps> = ({
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(containerRef, true)
   const boxWidth: number | undefined = dimensions?.borderBox.width
-  const boxHeight = dimensions?.borderBox.height
 
   const [indexDragged, setIndexDragged] = useState<number | null>(null)
 
@@ -45,11 +44,12 @@ export const MemePicture: React.FC<MemePictureProps> = ({
   }, [boxWidth])
 
   const handleDrag = (_: DraggableEvent, dragElement: DraggableData) => {
-    if (isNil(indexDragged) || isNil(boxWidth) || isNil(boxHeight)) return
+    if (isNil(indexDragged) || isNil(boxWidth) || isNil(height)) return
     console.log(
       {
-        x: Math.round((dragElement.x * 100) / boxWidth),
-        y: Math.round((dragElement.y * 100) / boxHeight),
+        x: dragElement.x * 100,
+        height,
+        y: Math.round((dragElement.y * 100) / height),
       },
       "drag"
     )
@@ -59,7 +59,7 @@ export const MemePicture: React.FC<MemePictureProps> = ({
           ? {
               ...text,
               x: Math.round((dragElement.x * 100) / boxWidth),
-              y: Math.round((dragElement.y * 100) / boxHeight),
+              y: Math.round((dragElement.y * 100) / height),
             }
           : text
       )

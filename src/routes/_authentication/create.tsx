@@ -10,7 +10,7 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react"
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { MemeEditor } from "../../components/meme-editor"
 import { useMemo, useState } from "react"
 import { MemePictureProps } from "../../components/meme-picture"
@@ -31,34 +31,18 @@ type Picture = {
 
 function CreateMemePage() {
   const token = useAuthToken()
+  const navigate = useNavigate({ from: "/create" })
 
   const [picture, setPicture] = useState<Picture | null>(null)
   const [texts, setTexts] = useState<MemePictureProps["texts"]>([])
   const [memeDescription, setMemeDescription] = useState<string>("")
 
-  /*   const convertToBase64 = (
-    file: File
-  ): Promise<string | ArrayBuffer | null> => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader()
-      fileReader.readAsDataURL(file)
-      fileReader.onload = () => {
-        resolve(fileReader.result)
-      }
-      fileReader.onerror = (error) => {
-        reject(error)
-      }
-    })
-  } */
-
-  function objectToFormData(obj: unknown) {
+  function objectToFormData(obj: Record<string, unknown>) {
     const formData = new FormData()
 
-    // Obtenir les clés de l'objet
     Object.keys(obj).map((key) => {
       const value = obj[key]
 
-      // Vérifier si la valeur est un tableau
       if (Array.isArray(value)) {
         value.map((item, index) => {
           Object.keys(item).map((keySec) => {
@@ -66,14 +50,15 @@ function CreateMemePage() {
               `${key}[${index}][${keySec}]: ${path([key, index, keySec], obj)}`,
               "map"
             )
+            const nestedValue = path([key, index, keySec], obj)
             formData.append(
               `${key}[${index}][${keySec}]`,
-              path([key, index, keySec], obj)
+              nestedValue as string
             )
           })
-        }) // Utiliser [] pour les tableaux
+        })
       } else {
-        formData.append(key, value) // Ajouter la clé/valeur
+        formData.append(key, value as string)
       }
     })
 
@@ -82,15 +67,13 @@ function CreateMemePage() {
 
   const { mutate } = useMutation({
     mutationFn: async (content: FormData) => await createMeme(token, content),
-    onSuccess: (data) => {
-      console.log(data, "data success")
+    onSuccess: () => {
+      navigate({ to: "/" })
     },
   })
 
   const handleSubmit = async () => {
     if (isNil(picture)) return
-    /*     const base64 = await convertToBase64(picture.file)
-    if (typeof base64 !== "string") return */
     const data: CreateMeme = {
       picture: picture.file,
       texts,
@@ -124,8 +107,8 @@ function CreateMemePage() {
       ...previousTexts,
       {
         content: `New caption ${texts.length + 1}`,
-        x: Math.round(Math.random() * 100),
-        y: Math.round(Math.random() * 75),
+        x: 0,
+        y: 0,
       },
     ])
   }
