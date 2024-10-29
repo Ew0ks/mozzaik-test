@@ -41,8 +41,7 @@ export const MemeFeedPage: React.FC = () => {
   const { mutate } = useMutation({
     mutationFn: async (data: { memeId: string; content: string }) =>
       await createMemeComment(token, data.memeId, data.content),
-    onSuccess: (data) => {
-      console.log(data, "data success")
+    onSuccess: () => {
       setCommentContent({})
       refetch()
     },
@@ -63,7 +62,6 @@ export const MemeFeedPage: React.FC = () => {
       return lastPage.page + 1
     },
     queryFn: async ({ pageParam }): Promise<GetMemesResponseWithAuthor> => {
-      console.log(pageParam, "pageParam")
       const fetchedMemesList = await getMemes(token, Number(pageParam))
       const rawMemesList = fetchedMemesList.results
 
@@ -155,11 +153,6 @@ export const MemeFeedPage: React.FC = () => {
 
     return () => container.removeEventListener("scroll", handleScroll)
   }, [handleScroll, isFetchingMemeFeed])
-
-  useEffect(
-    () => console.log(hasNextCommentsPage, "hasNextCommentsPage"),
-    [hasNextCommentsPage]
-  )
 
   return (
     <Flex

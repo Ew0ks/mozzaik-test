@@ -130,6 +130,7 @@ export type GetMemeCommentsResponse = {
  * Get comments for a meme
  * @param token
  * @param memeId
+ * @param page
  * @returns
  */
 export async function getMemeComments(
@@ -187,7 +188,6 @@ export type CreateMeme = {
 /**
  * Create a meme
  * @param token
- * @param memeId
  * @param content
  */
 export async function createMeme(

@@ -46,10 +46,6 @@ function CreateMemePage() {
       if (Array.isArray(value)) {
         value.map((item, index) => {
           Object.keys(item).map((keySec) => {
-            console.log(
-              `${key}[${index}][${keySec}]: ${path([key, index, keySec], obj)}`,
-              "map"
-            )
             const nestedValue = path([key, index, keySec], obj)
             formData.append(
               `${key}[${index}][${keySec}]`,
@@ -79,11 +75,7 @@ function CreateMemePage() {
       texts,
       description: memeDescription,
     }
-    console.log(data, "data")
     const payload = objectToFormData(data)
-    for (const pair of payload.entries()) {
-      console.log(pair[0] + ", " + pair[1], "formData")
-    }
     mutate(payload)
   }
 
